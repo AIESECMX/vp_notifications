@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+	<style type="text/css">
+		* {
+			font-family: 'Lato', sans-serif;
+			font-size: 12pt;
+			font-weight: 300;
+		}
+		th,td {
+			width: 20%;
+			text-align: center;
+			vertical-align: top;
+		}
+		th {
+			background-color: #ffc845;
+			padding: 10px;
+			color: #525658;
+			font-weight: 700;
+		}
+		.card {
+			background-color: #CACCD1;
+			padding: 10px;
+			width: 80%;
+			border-radius: 5px;
+			text-align: left;
+			display: inline-block;
+			margin: 10px auto 0 auto;
+		}
+		.inside {
+			font-size: 0.7em;
+		}
+		.name {
+			font-weight: 700;
+			margin: 0 0 0.6em 0;
+		}
+		a {
+			color: #000;
+		}
+		.lcdiv {
+			margin: 10px auto 0 auto;
+			display: inline-block;
+			text-align: center;
+			border-radius: 5px;
+			width: 90%;
+			background-color: rgba(3,126,243,0.3);
+			padding: 10px;
+			color: #525658;
+			font-weight: 400;
+			cursor: pointer;
+		}
+	</style>
+</head>
+
+<body>
+	<p>Hola! Este es el update diario de los aplicantes de México.</p>
+	<p>#GoWildOrGoHome🔥</p>
+
+	<table>
+		<tr>
+			<th>Applicants ({{openNo}})</th>
+			<th>Accepted ({{acceptedNo}})</th>
+			<th>In Progress ({{inProgressNo}})</th>
+			<th>Approved ({{approvedNo}})</th>
+		</tr>
+		<tr>
+			<td>
+				{{#lcs_open}}
+				<div class="lcdiv lcdiv_open"><span class="name">{{name}}</span>&nbsp;({{count}})</div>
+				<div id="{{code}}_open" class="lc_container">
+					{{#filtered}}
+					<a href="{{& person.url}}" target="_blank">
+					<div class="card">
+						<p class="name">{{person.full_name}}</p>
+						<span class="inside">
+						{{count}} open application(s)
+						<br>Email: {{person.email}}
+						</span>
+					</div>
+					</a>
+					{{/filtered}}
+				</div>
+				{{/lcs_open}}
+
+			</td>
+			<td>
+				{{#lcs_accepted}}
+				<div class="lcdiv lcdiv_accepted"><span class="name">{{name}}</span>&nbsp;({{count}})</div>
+				<div id="{{code}}_accepted" class="lc_container">
+					{{#filtered}}
+					<a href="{{& person.url}}" target="_blank">
+					<div class="card">
+						<p class="name">{{person.full_name}}</p>
+						<span class="inside">
+							Email: {{person.email}}
+							<br>Asegúrate que firme la AN!
+						</span>
+					</div>
+					</a>
+					{{/filtered}}
+				</div>
+				{{/lcs_accepted}}
+
+			</td>
+			<td>
+				{{#lcs_inProgress}}
+				<div class="lcdiv lcdiv_inProgress"><span class="name">{{name}}</span>&nbsp;({{count}})</div>
+				<div id="{{code}}_inProgress" class="lc_container">
+					{{#filtered}}
+					<a href="{{& person.url}}" target="_blank">
+					<div class="card">
+						<p class="name">{{person.full_name}}</p>
+						<span class="inside">
+						Email: {{person.email}}
+						<br>In Progress con {{opportunity.office.name}}, {{opportunity.office.country}}
+						<br>
+						{{#hasLDM}}(YES){{/hasLDM}}{{^hasLDM}}(NO){{/hasLDM}}&nbsp;&nbsp;LDA&nbsp;&nbsp;{{#hasPayed}}(YES){{/hasPayed}}{{^hasPayed}}(NO){{/hasPayed}}&nbsp;&nbsp;Pago
+						</span> 
+					</div>
+					</a>
+					{{/filtered}}
+				</div>
+				{{/lcs_inProgress}}
+				
+			</td>
+			<td>
+
+				{{#lcs_approved}}
+				<div class="lcdiv lcdiv_approved"><span class="name">{{name}}</span>&nbsp;({{count}})</div>
+				<div id="{{code}}_approved" class="lc_container">
+					{{#filtered}}
+					<a href="{{& person.url}}" target="_blank">
+					<div class="card">
+						<p class="name">{{person.full_name}}</p>
+						<span class="inside">
+						Approval con {{opportunity.office.name}}, {{opportunity.office.country}}
+						</span>
+					</div>
+					</a>
+					{{/filtered}}
+				</div>
+				{{/lcs_approved}}
+
+				
+			</td>
+		</tr>
+	</table>
+
+
+</body>
+
+</html>

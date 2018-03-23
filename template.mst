@@ -1,0 +1,111 @@
+<html>
+
+<head>
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+	<style type="text/css">
+		* {
+			font-family: 'Lato', sans-serif;
+			font-size: 12pt;
+			font-weight: 300;
+		}
+		th,td {
+			width: 20%;
+			text-align: center;
+			vertical-align: top;
+		}
+		th {
+			background-color: #ffc845;
+			padding: 10px;
+			color: #525658;
+			font-weight: 700;
+		}
+		.card {
+			background-color: #CACCD1;
+			padding: 10px;
+			width: 80%;
+			border-radius: 5px;
+			text-align: left;
+			display: inline-block;
+			margin: 10px auto 0 auto;
+			font-size: 0.7em;
+		}
+		.name {
+			font-weight: 700;
+			margin: 0 0 0.6em 0;
+		}
+		a {
+			color: #000;
+		}
+		li {
+			font-size:0.6em;
+		}
+	</style>
+</head>
+
+<body>
+	<p>Hola! Este es el update diario de cómo avanzaron tus aplicantes ayer. ¡Contáctalos para que impactemos a todos!</p>
+
+	<p>#GoWildOrGoHome🔥&nbsp;&nbsp;#Vikings&nbsp;#Vamos 🚌</p>
+
+	<p style="margin-bottom: 0.3em;">LC: {{lc}} <span style="font-size:0.8em;">(Aplicantes desde el 1 de Febrero de 2018)</span></p>
+	<p style="font-style:italic;font-size:0.8em;margin-top:0;">Tip: Haz click en los aplicantes para ir directo a su perfil en EXPA ;)</p>
+
+	<table>
+		<tr>
+			<th>Applicants ({{openNo}})</th>
+			<th>Accepted ({{acceptedNo}})</th>
+			<th>In Progress ({{inProgressNo}})</th>
+			<th>Approved ({{approvedNo}})</th>
+		</tr>
+		<tr>
+			<td>
+				{{#open}}
+				<a href="{{& person.url}}" target="_blank">
+				<div class="card">
+					<p class="name">{{person.full_name}}</p>
+					{{count}} open application(s)
+					<br>Email: {{person.email}}
+				</div>
+				</a>
+				{{/open}}
+			</td>
+			<td>
+				{{#accepted}}
+				<a href="{{& person.url}}" target="_blank">
+				<div class="card">
+					<p class="name">{{person.full_name}}</p>
+					Email: {{person.email}}
+					<br>Asegúrate que firme la AN!
+				</div>
+				</a>
+				{{/accepted}}
+			</td>
+			<td>
+				{{#inProgress}}
+				<a href="{{& person.url}}" target="_blank">
+				<div class="card">
+					<p class="name">{{person.full_name}}</p>
+					Email: {{person.email}}
+					<br>In Progress con {{opportunity.office.name}}, {{opportunity.office.country}}
+					<br>{{#hasLDM}}✅{{/hasLDM}}{{^hasLDM}}❌{{/hasLDM}}&nbsp;&nbsp;LDA&nbsp;&nbsp;{{#hasPayed}}✅{{/hasPayed}}{{^hasPayed}}❌{{/hasPayed}}&nbsp;&nbsp;Pago 
+				</div>
+				</a>
+				{{/inProgress}}
+			</td>
+			<td>
+				{{#approved}}
+				<a href="{{& person.url}}" target="_blank">
+				<div class="card">
+					<p class="name">{{person.full_name}}</p>
+					Approval con {{opportunity.office.name}}, {{opportunity.office.country}} 🎉
+				</div>
+				</a>
+				{{/approved}}
+			</td>
+		</tr>
+	</table>
+
+
+</body>
+
+</html>
