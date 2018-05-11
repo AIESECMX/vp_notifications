@@ -19,9 +19,9 @@ const EY = {
   MEXICO: 1589,
 };
 
-const DEBUG_ENV = 'DEBUG';
+const PRODUCTION_ENV = 'production';
+const NODE_ENV = process.env.NODE_ENV || 'development';
 const CURR_PROD = process.env.PRODUCT || 'GV';
-const NODE_ENV = process.env.NODE_ENV || DEBUG_ENV;
 
 const MAIL_TEMPLATE = Object.freeze({
   GV: '/Users/sgarcias/Developer/vp_notifications/template_gv.mst',
@@ -55,7 +55,7 @@ try {
 
 async function main() {
   // Get all OGX applications from the start date until today
-  if (NODE_ENV === DEBUG_ENV) console.log('Debug environment on, sending LC emails to sendgrid sink domain.');
+  if (NODE_ENV !== PRODUCTION_ENV) console.log('Non-production environment, sending LC emails to sendgrid sink domain.');
   console.log(`Retrieving all ${CURR_PROD} applications since ${START_DATE}...`);
   const applications = await getProductApplications(CURR_PROD, START_DATE, EY.MEXICO);
   console.log(`There are ${applications.length} applications retrieved`);
@@ -74,15 +74,14 @@ async function main() {
       // Check if there is an email address to send
       let lcEmails = constants.emails.find(el => el.id === lc.id);
       if (lcEmails && lcEmails[`to${CURR_PROD}`]) {
-        if (NODE_ENV === DEBUG_ENV) {
+        if (NODE_ENV !== PRODUCTION_ENV) {
           lcEmails = lcEmails[`to${CURR_PROD}`].map(el => el.replace('@aiesec.org.mx', '@sink.sendgrid.net'));
         }
-
         sendgrid.send({
           to: lcEmails,
           bcc: constants.CC_EMAIL[`to${CURR_PROD}`],
           from: 'AIESEC in Mexico <noreply@aiesec.org.mx>',
-          subject: 'oGV - EXPA Update',
+          subject: `o${CURR_PROD} - EXPA Update`,
           html,
         }).then(() => {
           console.log(`Sent email to ${lc.name}`);
