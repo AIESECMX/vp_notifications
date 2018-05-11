@@ -9,6 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@sendgrid/mail": "^6.2.1",
     "html-pdf": "^2.2.0",
     "mustache": "^2.3.0",
     "node-gis-wrapper": "0.0.2",

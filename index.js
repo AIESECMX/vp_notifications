@@ -1,40 +1,34 @@
 /* eslint no-await-in-loop: off */
 // Linter configuration, cannot avoit await in loop due to API rate limits
-const config = require('./config.js');
+// (Update: yes you can, set array of promises and wait for each one)
 const constants = require('./const.js');
 
 const mustache = require('mustache');
 const fs = require('fs');
-const nodemailer = require('nodemailer');
-const expa = require('node-gis-wrapper')(config.devUser, config.devPass);
+const expa = require('node-gis-wrapper')(constants.devUser, constants.devPass);
+const sendgrid = require('@sendgrid/mail');
+
+sendgrid.setApiKey(constants.sendgrid);
 
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at:', p, 'reason:', reason);
 });
 
+// EXPA Setup Constants (affects the execution of the script overall)
 const EY = {
   MEXICO: 1589,
 };
 
-const CURR_PROD = process.env.PROD || 'GV';
-
-/* const MAIL_TEMPLATE = Object.freeze({
-  GV: '/home/serch/MCVPDI1718/vp_notifications/template.mst',
-  GT: '/home/serch/MCVPDI1718/vp_notifications/template_gt.mst',
-  GE: '/home/serch/MCVPDI1718/vp_notifications/template_ge.mst',
-}); */
+const DEBUG_ENV = 'DEBUG';
+const CURR_PROD = process.env.PRODUCT || 'GV';
+const NODE_ENV = process.env.NODE_ENV || DEBUG_ENV;
 
 const MAIL_TEMPLATE = Object.freeze({
-  GV: '/Users/sgarcias/Developer/vp_notifications/template.mst',
+  GV: '/Users/sgarcias/Developer/vp_notifications/template_gv.mst',
   GT: '/Users/sgarcias/Developer/vp_notifications/template_gt.mst',
   GE: '/Users/sgarcias/Developer/vp_notifications/template_ge.mst',
 });
 
-// These are to be used in production, for testing use fakeEmail variable
-const USER = constants.gmail.user;
-const PASS = constants.gmail.pass;
-
-// EXPA Setup Constants (affects the execution of the script overall)
 const START_DATE = getStartDate(); // Start Date is today minus thirty days
 const PER_PAGE = 50;
 const PARALLEL = 3;
@@ -61,28 +55,10 @@ try {
 
 async function main() {
   // Get all OGX applications from the start date until today
+  if (NODE_ENV === DEBUG_ENV) console.log('Debug environment on, sending LC emails to sendgrid sink domain.');
   console.log(`Retrieving all ${CURR_PROD} applications since ${START_DATE}...`);
   const applications = await getProductApplications(CURR_PROD, START_DATE, EY.MEXICO);
   console.log(`There are ${applications.length} applications retrieved`);
-
-  // let fakeEmail; // To be used if fakeEmail is not used
-  const fakeEmail = nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: constants.ethereal.user, // generated ethereal user
-      pass: constants.ethereal.pass, // generated ethereal password
-    },
-  });
-  // Create Reusable Transporter object using the default SMTP transport
-  const email = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-      user: USER,
-      pass: PASS,
-    },
-  });
 
   LCs.forEach(async (lc) => {
     try { // Do synchronous email sending instead of asynchronous
@@ -93,39 +69,31 @@ async function main() {
       const inProgress = filterAndFormatApplicationByStatus(lcApps, 'accepted');
       const approved = filterAndFormatApplicationByStatus(lcApps, 'approved');
 
-      const body = mustacheRender(open, accepted, inProgress, approved, lc.name);
+      const html = mustacheRender(open, accepted, inProgress, approved, lc.name);
 
       // Check if there is an email address to send
-      const lcEmails = constants.emails.find(el => el.id === lc.id);
+      let lcEmails = constants.emails.find(el => el.id === lc.id);
       if (lcEmails && lcEmails[`to${CURR_PROD}`]) {
-        const mailOptions = getEmailOptions(CURR_PROD, lc, body);
-        if (fakeEmail) {
-          const info = await sendEmail(fakeEmail, mailOptions);
-          console.log(`Sent fake email to ${lc.name}`);
-          console.log(nodemailer.getTestMessageUrl(info));
-        } else if (email) {
-          await sendEmail(email, mailOptions);
-          console.log(`Sent email to ${lc.name}`);
+        if (NODE_ENV === DEBUG_ENV) {
+          lcEmails = lcEmails[`to${CURR_PROD}`].map(el => el.replace('@aiesec.org.mx', '@sink.sendgrid.net'));
         }
+
+        sendgrid.send({
+          to: lcEmails,
+          bcc: 'webmaster@aiesec.org.mx',
+          from: 'AIESEC in Mexico <noreply@aiesec.org.mx>',
+          subject: 'oGV - EXPA Update',
+          html,
+        }).then(() => {
+          console.log(`Sent email to ${lc.name}`);
+        }).catch(err => console.error(err.toString()));
       } else {
-        console.log(`Skipping email for ${lc.name}, no to${CURR_PROD} field.`);
+        console.log(`Skipping email for ${lc.name}, no to${CURR_PROD} field found.`);
       }
     } catch (err) {
       console.log(`There was an error while sending message to LC ${lc.name}`);
     }
   });
-}
-
-
-function getEmailOptions(prod, lc, body) { // Note to self: Global Vars are evil :C
-  const mailOptions = {
-    from: constants.FROM_DATA,
-    to: constants.emails.find(el => el.id === lc.id)[`to${prod}`].toString(), // list of receivers
-    cc: constants.CC_EMAIL[`to${prod}`],
-    subject: `o${prod} Applications Update - ${lc.name}`, // Subject line
-    html: body, // html body
-  };
-  return mailOptions;
 }
 
 async function getProductApplications(prod, startDate, ey) {
@@ -197,19 +165,6 @@ function mustacheRender(open, accepted, inProgress, approved, lc) {
   const rendered = mustache.render(template, data);
 
   return rendered;
-}
-
-function sendEmail(email, mailOptions) {
-  const p = new Promise(resolve => email.sendMail(mailOptions, (error, info) => {
-    if (error) throw error;
-    resolve(info);
-  }));
-
-  p.catch((err) => {
-    console.log(err);
-    throw err;
-  });
-  return p;
 }
 
 function filterAndFormatApplicationByStatus(apps, status) {
