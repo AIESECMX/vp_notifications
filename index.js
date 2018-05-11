@@ -80,7 +80,7 @@ async function main() {
 
         sendgrid.send({
           to: lcEmails,
-          bcc: 'webmaster@aiesec.org.mx',
+          bcc: constants.CC_EMAIL[`to${CURR_PROD}`],
           from: 'AIESEC in Mexico <noreply@aiesec.org.mx>',
           subject: 'oGV - EXPA Update',
           html,
