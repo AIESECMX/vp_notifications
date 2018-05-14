@@ -76,7 +76,7 @@ async function main() {
       let lcEmails = constants.emails.find(el => el.id === lc.id);
       if (lcEmails && lcEmails[`to${CURR_PROD}`]) {
         if (NODE_ENV !== PRODUCTION_ENV) {
-          lcEmails = lcEmails[`to${CURR_PROD}`].map(el => el.replace('@aiesec.org.mx', '@sink.sendgrid.net'));
+          lcEmails[`to${CURR_PROD}`] = lcEmails[`to${CURR_PROD}`].map(el => el.replace('@aiesec.org.mx', '@sink.sendgrid.net'));
         }
         sendgrid.send({
           to: lcEmails[`to${CURR_PROD}`],
