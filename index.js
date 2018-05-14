@@ -24,9 +24,9 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 const CURR_PROD = process.env.PRODUCT || 'GV';
 
 const MAIL_TEMPLATE = Object.freeze({
-  GV: '/Users/sgarcias/Developer/vp_notifications/template_gv.mst',
-  GT: '/Users/sgarcias/Developer/vp_notifications/template_gt.mst',
-  GE: '/Users/sgarcias/Developer/vp_notifications/template_ge.mst',
+  GV: `${__dirname}/template_gv.mst`,
+  GT: `${__dirname}/template_gt.mst`,
+  GE: `${__dirname}/template_ge.mst`,
 });
 
 const START_DATE = getStartDate(); // Start Date is today minus thirty days
@@ -35,7 +35,8 @@ const PARALLEL = 3;
 const applicationsUrl = 'applications.json';
 
 // Ordered list of LCs (alphabetical name)
-const LCs = constants.lcs.map(el => ({ id: el.id, name: el.name })).sort((a, b) => a.name.toString().localeCompare(b.name, 'la'));
+const LCs = constants.lcs.map(el => ({ id: el.id, name: el.name })).sort((a, b) => a.name.toString().localeCompare(b.name, 'la'))
+//  .slice(0,3); // For testing with a smaller sample
 
 const PRODUCT = Object.freeze({
   iGT: { name: 'iGT', type: 'opportunity', programme: 2 },
@@ -85,12 +86,12 @@ async function main() {
           html,
         }).then(() => {
           console.log(`Sent email to ${lc.name}`);
-        }).catch(err => console.error(err.toString()));
+        }).catch(err => console.log(err.toString()));
       } else {
         console.log(`Skipping email for ${lc.name}, no to${CURR_PROD} field found.`);
       }
     } catch (err) {
-      console.log(`There was an error while sending message to LC ${lc.name}`);
+      console.log(`There was an error while sending message to LC ${lc.name}:`,err);
     }
   });
 }
