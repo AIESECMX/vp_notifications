@@ -29,7 +29,7 @@ const MAIL_TEMPLATE = Object.freeze({
   GE: `${__dirname}/template_ge.mst`,
 });
 
-const START_DATE = getStartDate(); // Start Date is today minus thirty days
+const START_DATE = getStartDate();
 const PER_PAGE = 50;
 const PARALLEL = 3;
 const applicationsUrl = 'applications.json';
@@ -79,14 +79,14 @@ async function main() {
           lcEmails = lcEmails[`to${CURR_PROD}`].map(el => el.replace('@aiesec.org.mx', '@sink.sendgrid.net'));
         }
         sendgrid.send({
-          to: lcEmails,
+          to: lcEmails[`to${CURR_PROD}`],
           bcc: constants.CC_EMAIL[`to${CURR_PROD}`],
           from: 'AIESEC in Mexico <noreply@aiesec.org.mx>',
           subject: `o${CURR_PROD} - EXPA Update`,
           html,
         }).then(() => {
           console.log(`Sent email to ${lc.name}`);
-        }).catch(err => console.log(err.toString()));
+        }).catch(err => console.log('Sendgrid error',err.toString()));
       } else {
         console.log(`Skipping email for ${lc.name}, no to${CURR_PROD} field found.`);
       }
